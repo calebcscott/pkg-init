@@ -57,9 +57,8 @@ func initConfig() {
     }
 
     viper.AutomaticEnv()
-
-    if err := viper.ReadInConfig(); err == nil {
-        fmt.Println("User config file:", viper.ConfigFileUsed())
+    if err := viper.ReadInConfig(); err != nil {
+        fmt.Println("Could not find config, no templates will be available")
     }
 }
 
