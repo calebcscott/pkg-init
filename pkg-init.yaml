@@ -6,6 +6,8 @@ templates:
   test: test.yaml
 default:
   type: raw
+  commands: |
+    echo true
   contents:
     target:
       bin:
