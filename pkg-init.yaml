@@ -1,0 +1,23 @@
+
+
+data-dir: /usr/share/pkg-int/etc
+templates:
+  default: default
+  test: test.yaml
+default:
+  type: raw
+  contents:
+    target:
+      bin:
+        -
+    bin:
+      -
+    test:
+      -
+    src:
+      main.c: |
+        
+        int main(int argc, char *argv[]) {
+          print("Hello, World!");
+        }
+    Makefile: ""
