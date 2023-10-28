@@ -36,8 +36,6 @@ current directory, but can be provided.`,
             outputDir = args[0]
         }
 
-        fmt.Println("Using flags/options:", templateFile, lang, outputDir)
-
         template, err := template.NewTemplate(templateFile, lang, outputDir, &config)
         if err != nil {
             fmt.Println("Error", err)
