@@ -192,7 +192,19 @@ func (t templateContent) build( config *config.PkgConfig, tld string ) error {
     return nil
 }
 
+func findLangTemplate(lang string, config *config.PkgConfig) (template, error) {
+    if lang == "" {
+        return nil, errors.New("no language provided")
+    }
+    
+    templateName, found := config.LanguageSupport[lang]
 
+    if !found {
+        return nil, errors.New("language ("+lang+") not supported")
+    }
+
+    return readTeamplate(templateName, config)
+}
 
 func readTeamplate(templateName string, config *config.PkgConfig) (template, error) {
 

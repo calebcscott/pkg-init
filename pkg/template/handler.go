@@ -72,10 +72,22 @@ func (th TemplateHandler) Init(config *config.PkgConfig) error {
 
 
 func NewTemplate(name string, lang string, dir string, config *config.PkgConfig) (TemplateHandler, error) {
-    template, error := readTeamplate(name, config)
+    var template template
+    var err error
+    if lang != "" {
+        template, err = findLangTemplate(lang, config)
+        if err != nil {
+            fmt.Println(err)
+            template, err = readTeamplate(name, config)
+        } 
+    } else {
+        template, err = readTeamplate(name, config)
+    }
 
-    if error != nil {
-        return TemplateHandler{}, error
+    
+
+    if err != nil {
+        return TemplateHandler{}, err
     }
 
     return TemplateHandler{
