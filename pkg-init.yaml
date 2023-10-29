@@ -1,6 +1,9 @@
 
 
 data-dir: /usr/share/pkg-int/etc
+languages:
+  c: default
+  c++: default
 templates:
   default: default
   test: test.yaml
