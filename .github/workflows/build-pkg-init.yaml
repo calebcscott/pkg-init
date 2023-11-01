@@ -21,7 +21,7 @@ jobs:
         run: go mod download
 
       - name: Build
-        run: GOFLAGS=-mode=mod go build main.go
+        run: GOFLAGS=-mod=mod go build main.go
 
       - name: Test
-        run: GOFLAGS=-mode=mod go test main.go
+        run: GOFLAGS=-mod=mod go test main.go
