@@ -1,8 +1,10 @@
 package template
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/calebcscott/pkg-init/pkg/config"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 	//"gopkg.in/yaml.v3"
 )
 
@@ -206,7 +209,40 @@ func findLangTemplate(lang string, config *config.PkgConfig) (template, error) {
     return readTeamplate(templateName, config)
 }
 
+func readYamlFile(fileName string) (map[string]interface{}, error) {
+    fd, err := os.Open(fileName)
+
+    if err != nil {
+        return nil, errors.New("Could not find/open tempalte file: " + fileName)
+    }
+
+    stat, err := fd.Stat()
+    if err != nil {
+        return nil, errors.New("Could not read tempalte file: " + fileName)
+    }
+
+
+    yamlFile := make([]byte, stat.Size())
+    _, err = bufio.NewReader(fd).Read(yamlFile)
+
+    if err != nil && err != io.EOF {
+        return nil, errors.New("Could not read tempalte file: " + fileName)
+    }
+    templateMap := make(map[string]interface{})
+
+    err = yaml.Unmarshal(yamlFile, templateMap)
+
+    if err != nil {
+        return nil, errors.New("Could not parse yaml file: " + fileName)
+    }
+
+    return templateMap, nil
+}
+
 func readTeamplate(templateName string, config *config.PkgConfig) (template, error) {
+
+    var templateMap map[string]interface{}
+    var err error
 
     if res := strings.Contains(templateName, "yaml"); !res {
         // check config for template
@@ -216,19 +252,41 @@ func readTeamplate(templateName string, config *config.PkgConfig) (template, err
             return nil, errors.New("No template with name: "+templateName+"\n\tTry adding it.")
         }
 
-        templateMap := viper.GetStringMap(v)
+        templateMap = viper.GetStringMap(v)
 
-        t, found := templateMap["type"] 
+        
+    } else {
+        // read yaml file directly for templateMap
+        templateMap, err = readYamlFile(templateName) 
+
+        if err != nil {
+            return nil, err
+        }
+
+        _, fileName := filepath.Split(templateName)
+        templateName = strings.Split(fileName, ".")[0]
+
+        var found bool
+        templateMap, found = templateMap[templateName].(map[string]interface{})
+
         if !found {
-            return nil, errors.New("malformed template, couldn't find type")
+            return nil, errors.New("malformed template")
         }
 
-        switch t {
-        case "raw":
-            return newTemplateContent(templateMap)
-        }
     }
 
 
-    return nil, errors.New("No template with name: "+templateName)
+    t, found := templateMap["type"] 
+    if !found {
+        return nil, errors.New("malformed template, couldn't find type")
+    }
+
+    switch t {
+    case "raw":
+        return newTemplateContent(templateMap)
+
+    default:
+        return nil, errors.New("Template type("+t.(string)+") not implemented.")
+    }
+
 }
