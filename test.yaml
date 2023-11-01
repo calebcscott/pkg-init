@@ -1,0 +1,17 @@
+
+
+
+
+test:
+  type: raw
+  contents:
+    test1:
+      -
+    test2:
+      -
+    f1.sh: |
+      #!/bin/bash
+      #
+      echo true
+
+
