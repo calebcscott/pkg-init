@@ -236,6 +236,16 @@ func readYamlFile(fileName string) (map[string]interface{}, error) {
         return nil, errors.New("Could not parse yaml file: " + fileName)
     }
 
+    _, templateName := filepath.Split(fileName)
+    templateName = strings.Split(templateName, ".")[0]
+
+    var found bool
+    templateMap, found = templateMap[templateName].(map[string]interface{})
+
+    if !found {
+        return nil, errors.New("malformed template")
+    }
+
     return templateMap, nil
 }
 
@@ -252,8 +262,18 @@ func readTeamplate(templateName string, config *config.PkgConfig) (template, err
             return nil, errors.New("No template with name: "+templateName+"\n\tTry adding it.")
         }
 
-        templateMap = viper.GetStringMap(v)
 
+        if res := strings.Contains(v, "yaml"); !res {
+            // read template from config
+            templateMap = viper.GetStringMap(v)
+        } else {
+            // read template from yaml file directly
+            templateMap, err = readYamlFile(v) 
+
+            if err != nil {
+                return nil, err
+            }
+        }
         
     } else {
         // read yaml file directly for templateMap
@@ -263,19 +283,9 @@ func readTeamplate(templateName string, config *config.PkgConfig) (template, err
             return nil, err
         }
 
-        _, fileName := filepath.Split(templateName)
-        templateName = strings.Split(fileName, ".")[0]
-
-        var found bool
-        templateMap, found = templateMap[templateName].(map[string]interface{})
-
-        if !found {
-            return nil, errors.New("malformed template")
-        }
-
     }
 
-
+    // switch on type to perform necessary steps for template struct building
     t, found := templateMap["type"] 
     if !found {
         return nil, errors.New("malformed template, couldn't find type")
