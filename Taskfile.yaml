@@ -6,6 +6,19 @@ tasks:
     cmds:
     - GOFLAGS=-mod=mod go build -o bin/pkg-init main.go
 
+  test:
+    desc: Run unit tests of pkg-init
+    cmds:
+    - GOFLAGS=-mod=mod go test -v ./...
+
+
+  cover:
+    desc: Run coverage of unit tests of pkg-init
+    cmds:
+    - GOFLAGS=-mod=mod go test -cover ./...
+
+
+
   run:
     desc: Run pkg-init
     cmds:
