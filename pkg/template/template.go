@@ -79,8 +79,8 @@ func (tc *TemplateContents) UnmarshalYAML(unmarshal func(interface{}) error) err
             tc.dirs = append(tc.dirs, dir)
 
         case map[string]interface{}:
-            for subEntry, subContents := range content {
-            }
+            //for subEntry, subContents := range content {
+            //}
         }
     }
 
