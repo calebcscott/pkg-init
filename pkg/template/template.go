@@ -88,7 +88,7 @@ func newTemplateContent(temp map[string]interface{}) (templateContent, error) {
     if !found {
         return templateContent{}, errors.New("malformed template, no contents found")
     }
-    if err:= validate_template(contents); err != nil {
+    if err:= validateTemplate(contents); err != nil {
         return templateContent{}, err
     }
 
@@ -115,14 +115,14 @@ func newTemplateContent(temp map[string]interface{}) (templateContent, error) {
     Do not need to pass a Top-Level-Directory / Prefix since we
         do not do any path validation, only template validation
 */
-func validate_template(contentMap interface{}) error {
+func validateTemplate(contentMap interface{}) error {
     switch  contentMap := contentMap.(type) {
     // empty case for string []interface{} since we expect those
     case string:
     case []interface{}:
     case map[string]interface{}:
         for _, contents := range contentMap {
-            validate_template(contents)
+            validateTemplate(contents)
         }
     default:
         return errors.New("malformed template")
@@ -136,7 +136,7 @@ func validate_template(contentMap interface{}) error {
 
     Still need to return possible errors with directory or file names/creation
 */
-func build_template(contentMap interface{}, tld string) error {
+func buildTemplate(contentMap interface{}, tld string) error {
     var err error = nil
     switch  contentMap := contentMap.(type) {
     case string:
@@ -169,7 +169,7 @@ func build_template(contentMap interface{}, tld string) error {
             // recurse to pick up files/subdirs if no error
             // cannot recurse if error'd on dir creation
             if dirErr == nil {
-                subErr := build_template(contents, newTld)
+                subErr := buildTemplate(contents, newTld)
 
                 if err == nil {
                     err = subErr
@@ -183,7 +183,7 @@ func build_template(contentMap interface{}, tld string) error {
 
 func (t templateContent) build( config *config.PkgConfig, tld string ) error {
     // attempt to build template
-    if err := build_template(t.contents, tld); err != nil {
+    if err := buildTemplate(t.contents, tld); err != nil {
         return err
     }
 
