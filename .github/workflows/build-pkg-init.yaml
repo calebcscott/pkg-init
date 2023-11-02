@@ -24,4 +24,7 @@ jobs:
         run: GOFLAGS=-mod=mod go build main.go
 
       - name: Test
-        run: GOFLAGS=-mod=mod go test main.go
+        run: GOFLAGS=-mod=mod go test -v ./...
+      
+      - name: Coverage
+        run: GOFLAGS=-mod=mod go test -cover ./...
