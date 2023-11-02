@@ -22,6 +22,18 @@ type template interface {
     build( *config.PkgConfig, string ) error
 }
 
+type File struct {
+    name    string
+    content string
+}
+type Dir struct {
+    name    string
+    files []File
+}
+type TemplateContents struct {
+    dirs []Dir
+    files []File
+}
 
 type cmd struct {
     cmds []exec.Cmd
@@ -42,6 +54,39 @@ type templateGit struct {
     commands cmd
 }
 
+
+/*
+    TODO: maybe figure out how to create custom unmarshaler for a template contents object
+        could be useful(?)
+*/
+func (tc *TemplateContents) UnmarshalYAML(unmarshal func(interface{}) error) error {
+    var details map[string]interface{}
+
+    if err := unmarshal(&details); err != nil {
+        return err
+    }
+
+    for entry, content := range details {
+        switch content := content.(type) {
+
+        case string:
+            file := File{ entry, content }
+            tc.files = append(tc.files, file)
+
+        case []interface{}:
+            var dir Dir
+            dir.name = entry
+            tc.dirs = append(tc.dirs, dir)
+
+        case map[string]interface{}:
+            for subEntry, subContents := range content {
+            }
+        }
+    }
+
+
+    return nil
+}
 
 func newCommand(cmds string) (cmd, error) {
 
