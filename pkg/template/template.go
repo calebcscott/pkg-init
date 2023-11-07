@@ -254,6 +254,10 @@ func findLangTemplate(lang string, config *config.PkgConfig) (template, error) {
     return readTeamplate(templateName, config)
 }
 
+/*
+    TODO: @ccs change signature or add procedure to provide template name
+        may not want template name == filename
+*/
 func readYamlFile(fileName string) (map[string]interface{}, error) {
     fd, err := os.Open(fileName)
 
@@ -288,7 +292,7 @@ func readYamlFile(fileName string) (map[string]interface{}, error) {
     templateMap, found = templateMap[templateName].(map[string]interface{})
 
     if !found {
-        return nil, errors.New("malformed template")
+        return nil, errors.New("malformed template, could not entry: " + templateName)
     }
 
     return templateMap, nil
@@ -299,7 +303,9 @@ func readTeamplate(templateName string, config *config.PkgConfig) (template, err
     var templateMap map[string]interface{}
     var err error
 
-    if res := strings.Contains(templateName, "yaml"); !res {
+    // cant enter this block if we were not handed a ref to the config
+    // if config is nil and templateName is a valid path to valid template yaml we are fine
+    if res := strings.Contains(templateName, "yaml"); !res && config != nil {
         // check config for template
         v, found := config.TemplateMap[templateName]
 
@@ -339,7 +345,7 @@ func readTeamplate(templateName string, config *config.PkgConfig) (template, err
     switch t {
     case "raw":
         return newTemplateContent(templateMap)
-
+    // TODO: @ccs add additional template types 
     default:
         return nil, errors.New("Template type("+t.(string)+") not implemented.")
     }
