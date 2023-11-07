@@ -28,5 +28,7 @@ var addCmd = &cobra.Command{
 func init() {
     rootCmd.AddCommand(addCmd)
 
-    // TODO add flags
+    // TODO add name flag, this may have to be done after adjustment to yaml file reading
+    //  to allow name of template to be different from name of file
+    addCmd.Flags().StringP("name", "n", "", "Name for template") 
 }
