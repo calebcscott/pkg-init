@@ -10,7 +10,7 @@ var addCmd = &cobra.Command{
     Use: "add",
     Short: "Add a project template",
     Long: "Adds a project template so that it can be used shorthand.",
-    Args: cobra.MaximumNArgs(1),
+    Args: cobra.ExactArgs(1),
     Run: func(cmd *cobra.Command, args []string) {
         //TODO add logic to add template 
 
