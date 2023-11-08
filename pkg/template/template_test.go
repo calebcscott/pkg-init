@@ -11,10 +11,10 @@ import (
 func Test_validateTemplate_BadInput(t *testing.T) {
     var emptyMap interface{}
 
-    err := validateTemplate(emptyMap)
+    err := validateTemplateContents(emptyMap)
 
     if err == nil {
-        t.Errorf("validateTemplate on empty map failed, expected error")
+        t.Errorf("validateTemplateContents on empty map failed, expected error")
     }
 }
 
