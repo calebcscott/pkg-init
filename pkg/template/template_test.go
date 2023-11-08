@@ -25,7 +25,7 @@ func Test_newTemplateContent_BadInput(t *testing.T) {
 
     tc, err := newTemplateContent(emptyMap)
 
-    if len(tc.contents) != 0 || err == nil {
+    if tc != nil || err == nil {
         t.Errorf("newTemplateContent failed, expected -> %v, got -> %v", templateContent{}, tc)
     }
 }

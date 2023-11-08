@@ -50,7 +50,7 @@ func getChoiceB(msg string) bool {
     }
 }
 
-func (th TemplateHandler) Init(config *config.PkgConfig) error {
+func (th *TemplateHandler) Init(config *config.PkgConfig) error {
     fmt.Println("Initializing template", th.Name, "in directory", th.directory)
 
     empty, err := IsEmpty(th.directory)
