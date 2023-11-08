@@ -155,7 +155,7 @@ func newTemplateContent(temp map[string]interface{}) (*templateContent, error) {
 
 
 /*
-    validate_template
+    validateTemplateContents
 
     Validate whether supplied template matches expected contents
     Do not need to pass a Top-Level-Directory / Prefix since we
@@ -182,7 +182,7 @@ func validateTemplateContents(contentMap interface{}) error {
 
     Still need to return possible errors with directory or file names/creation
 */
-func buildTemplate(contentMap interface{}, tld string) error {
+func buildTemplateContents(contentMap interface{}, tld string) error {
     var err error = nil
     switch  contentMap := contentMap.(type) {
     case string:
@@ -215,7 +215,7 @@ func buildTemplate(contentMap interface{}, tld string) error {
             // recurse to pick up files/subdirs if no error
             // cannot recurse if error'd on dir creation
             if dirErr == nil {
-                subErr := buildTemplate(contents, newTld)
+                subErr := buildTemplateContents(contents, newTld)
 
                 if err == nil {
                     err = subErr
@@ -229,7 +229,7 @@ func buildTemplate(contentMap interface{}, tld string) error {
 
 func (t *templateContent) build( config *config.PkgConfig, tld string ) error {
     // attempt to build template
-    if err := buildTemplate(t.contents, tld); err != nil {
+    if err := buildTemplateContents(t.contents, tld); err != nil {
         return err
     }
 
