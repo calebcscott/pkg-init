@@ -103,7 +103,8 @@ func newCommand(cmds string) (cmd, error) {
 
     return cmd{ commands }, nil
 }
-func (c cmd) run (dir string) error {
+
+func (c *cmd) run (dir string) error {
 
     if len(c.cmds) == 0 {
         return nil
@@ -125,16 +126,16 @@ func (c cmd) run (dir string) error {
     return nil
 }
 
-func newTemplateContent(temp map[string]interface{}) (templateContent, error) {
+func newTemplateContent(temp map[string]interface{}) (*templateContent, error) {
 
     // pull out contents
     contents, found := temp["contents"]
 
     if !found {
-        return templateContent{}, errors.New("malformed template, no contents found")
+        return nil, errors.New("malformed template, no contents found")
     }
     if err:= validateTemplate(contents); err != nil {
-        return templateContent{}, err
+        return nil, err
     }
 
     // pull out commands, optional field
@@ -145,11 +146,11 @@ func newTemplateContent(temp map[string]interface{}) (templateContent, error) {
     }
     cmd, err := newCommand(commands.(string))
     if err != nil {
-        return templateContent{}, err
+        return nil, err
     }
 
 
-    return templateContent{contents.(map[string]interface{}), cmd }, nil
+    return &templateContent{contents.(map[string]interface{}), cmd }, nil
 }
 
 
@@ -226,7 +227,7 @@ func buildTemplate(contentMap interface{}, tld string) error {
     return err
 }
 
-func (t templateContent) build( config *config.PkgConfig, tld string ) error {
+func (t *templateContent) build( config *config.PkgConfig, tld string ) error {
     // attempt to build template
     if err := buildTemplate(t.contents, tld); err != nil {
         return err
