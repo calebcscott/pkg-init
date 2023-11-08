@@ -2,8 +2,10 @@ package template
 
 import (
 	"fmt"
-    "io"
-    "os"
+	"io"
+	"os"
+	"path/filepath"
+
 	"github.com/calebcscott/pkg-init/pkg/config"
 )
 
@@ -32,7 +34,7 @@ func IsEmpty(name string) (bool, error) {
     return false, err
 }
 
-func getChoiceB(msg string) bool {
+func GetChoiceB(msg string) bool {
 
     for {
         fmt.Print(msg)
@@ -58,7 +60,7 @@ func (th *TemplateHandler) Init(config *config.PkgConfig) error {
     if err == nil && !empty {
         // need to check if user is Ok with starting in non-empty directory
         msg := fmt.Sprintf("Directory %s is not empty, do you want to continue [Y/n]: ", th.directory)
-        if !getChoiceB(msg) {
+        if !GetChoiceB(msg) {
             return nil
         }
     }
@@ -99,3 +101,37 @@ func NewTemplate(name string, lang string, dir string, config *config.PkgConfig)
 }
 
 
+func CacheTemplateFile(path string, config *config.PkgConfig) string {
+    _, fileName := filepath.Split(path)
+    srcFile, err := os.Open(path)
+    if err != nil {
+        fmt.Printf("Could not open file %s: %v\n", fileName, err)
+    }
+    dstPath := filepath.Join(config.CacheDir, fileName)
+    dstFile, err := os.Open(dstPath)
+    if err != nil {
+        fmt.Println("Could not create cached file, using provided filepath as absolute")
+        absPath, err := filepath.Abs(path)
+        if err != nil {
+            fmt.Println("Got error getting absolute path:", err)
+            return path 
+        }
+        return absPath
+    }
+
+    _, err = io.Copy(dstFile, srcFile)
+    if err != nil {
+        fmt.Println("Could not write to cache file, using provided filepath as absolute")
+        absPath, _ := filepath.Abs(path)
+        if err != nil {
+            return path 
+        }
+        return absPath
+    }
+
+    absDst, _ := filepath.Abs(path)
+    if err != nil {
+        return dstPath
+    }
+    return absDst
+}
