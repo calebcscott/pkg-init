@@ -134,7 +134,7 @@ func newTemplateContent(temp map[string]interface{}) (*templateContent, error) {
     if !found {
         return nil, errors.New("malformed template, no contents found")
     }
-    if err:= validateTemplate(contents); err != nil {
+    if err:= validateTemplateContents(contents); err != nil {
         return nil, err
     }
 
@@ -161,14 +161,14 @@ func newTemplateContent(temp map[string]interface{}) (*templateContent, error) {
     Do not need to pass a Top-Level-Directory / Prefix since we
         do not do any path validation, only template validation
 */
-func validateTemplate(contentMap interface{}) error {
+func validateTemplateContents(contentMap interface{}) error {
     switch  contentMap := contentMap.(type) {
     // empty case for string []interface{} since we expect those
     case string:
     case []interface{}:
     case map[string]interface{}:
         for _, contents := range contentMap {
-            validateTemplate(contents)
+            validateTemplateContents(contents)
         }
     default:
         return errors.New("malformed template")
