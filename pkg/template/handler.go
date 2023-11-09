@@ -73,7 +73,7 @@ func (th *TemplateHandler) Init(config *config.PkgConfig) error {
 }
 
 
-func NewTemplate(name string, lang string, dir string, config *config.PkgConfig) (TemplateHandler, error) {
+func NewTemplate(name string, lang string, dir string, config *config.PkgConfig) (*TemplateHandler, error) {
     var template template
     var err error
     if lang != "" {
@@ -89,10 +89,10 @@ func NewTemplate(name string, lang string, dir string, config *config.PkgConfig)
     
 
     if err != nil {
-        return TemplateHandler{}, err
+        return nil, err
     }
 
-    return TemplateHandler{
+    return &TemplateHandler{
         Name: name,
         language: lang,
         directory: dir,
