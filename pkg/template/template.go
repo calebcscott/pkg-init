@@ -126,6 +126,39 @@ func (c *cmd) run (dir string) error {
     return nil
 }
 
+
+func newTemplatePath(temp map[string]interface{}) (*templatePath, error) {
+
+    possiblePath, found := temp["path"]
+
+    if !found {
+        return nil, errors.New("malformed template, no path found")
+    }
+
+    path, ok := possiblePath.(string)
+    if !ok {
+        return nil, errors.New("malformed value for path, expected string")
+    }
+
+    _, err := os.Stat(path)
+    if err != nil {
+        return nil, errors.New("cannot find provided path in template")
+    } 
+
+    // pull out commands, optional field
+    commands := temp["commands"]
+
+    if commands == nil {
+        commands = ""
+    }
+    cmd, err := newCommand(commands.(string))
+    if err != nil {
+        return nil, err
+    }
+
+    return &templatePath{ path, cmd }, nil
+}
+
 func newTemplateContent(temp map[string]interface{}) (*templateContent, error) {
 
     // pull out contents
@@ -225,6 +258,14 @@ func buildTemplateContents(contentMap interface{}, tld string) error {
     }
 
     return err
+}
+
+
+func (t *templatePath) build( config *config.PkgConfig, tld string ) error {
+    // attempt to create dir/file in provided path as check(?)
+
+
+    return nil
 }
 
 func (t *templateContent) build( config *config.PkgConfig, tld string ) error {
