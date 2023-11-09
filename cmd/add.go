@@ -32,11 +32,16 @@ var addCmd = &cobra.Command{
         // get viper configurations(?)
         config := config.NewConfig()
 
-        // attempt to copy/cache template file
-        dstPath := template.CacheTemplateFile(args[0], &config)
 
         // parse/validate provided template
+        if _, err := template.NewTemplate(args[0], "", "", &config); err != nil {
+            fmt.Printf("Proivded file(%s) does not validate.\n", args[0])
+            return
+        }
 
+
+        // attempt to copy/cache template file
+        dstPath := template.CacheTemplateFile(args[0], &config)
         
         // add template to config with viper
         v := viper.GetString("templates."+templateName)
