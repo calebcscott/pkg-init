@@ -107,21 +107,32 @@ func CacheTemplateFile(path string, config *config.PkgConfig) string {
     if err != nil {
         fmt.Printf("Could not open file %s: %v\n", fileName, err)
     }
+    defer srcFile.Close()
     dstPath := filepath.Join(config.CacheDir, fileName)
-    dstFile, err := os.Open(dstPath)
+    dstFile, err := os.OpenFile(dstPath, os.O_CREATE | os.O_WRONLY, 0644)
     if err != nil {
-        fmt.Println("Could not create cached file, using provided filepath as absolute")
-        absPath, err := filepath.Abs(path)
+        dstFile, err = os.Create(dstPath)
         if err != nil {
-            fmt.Println("Got error getting absolute path:", err)
-            return path 
+            // Could not find nor create file
+            fmt.Println("Could not create cached file, using provided filepath as absolute", err)
+            absPath, err := filepath.Abs(path)
+            if err != nil {
+                fmt.Println("Got error getting absolute path:", err)
+                return path 
+            }
+            return absPath
         }
-        return absPath
+    } else {
+        if !GetChoiceB("File already exists, do you want to overwrite?[Y/n]") {
+            dstFile.Close()
+            return path
+        }
     }
+    defer dstFile.Close()
 
     _, err = io.Copy(dstFile, srcFile)
     if err != nil {
-        fmt.Println("Could not write to cache file, using provided filepath as absolute")
+        fmt.Println("Could not write to cache file, using provided filepath as absolute:", err)
         absPath, _ := filepath.Abs(path)
         if err != nil {
             return path 
@@ -129,7 +140,7 @@ func CacheTemplateFile(path string, config *config.PkgConfig) string {
         return absPath
     }
 
-    absDst, _ := filepath.Abs(path)
+    absDst, _ := filepath.Abs(dstPath)
     if err != nil {
         return dstPath
     }
