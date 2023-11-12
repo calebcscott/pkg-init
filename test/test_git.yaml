@@ -1,0 +1,5 @@
+
+
+test_git:
+  type: git
+  repo: git@github.com:lacion/cookiecutter-golang.git
