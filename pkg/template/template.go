@@ -142,7 +142,7 @@ func newTemplatePath(temp map[string]interface{}) (*templatePath, error) {
 
     _, err := os.Stat(path)
     if err != nil {
-        return nil, errors.New("cannot find provided path in template")
+        return nil, errors.New("cannot find provided path ("+path+") in template")
     } 
 
     // pull out commands, optional field
@@ -263,7 +263,17 @@ func buildTemplateContents(contentMap interface{}, tld string) error {
 
 func (t *templatePath) build( config *config.PkgConfig, tld string ) error {
     // attempt to create dir/file in provided path as check(?)
+    cmd := exec.Command("cp", "-R", t.path, tld)
 
+    err := cmd.Run()
+
+    if err != nil {
+        return err
+    }
+
+    if err := t.commands.run(tld); err != nil {
+        return err
+    }
 
     return nil
 }
@@ -387,6 +397,8 @@ func readTeamplate(templateName string, config *config.PkgConfig) (template, err
     switch t {
     case "raw":
         return newTemplateContent(templateMap)
+    case "path":
+        return newTemplatePath(templateMap)
     // TODO: @ccs add additional template types 
     default:
         return nil, errors.New("Template type("+t.(string)+") not implemented.")
