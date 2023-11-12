@@ -127,6 +127,39 @@ func (c *cmd) run (dir string) error {
 }
 
 
+func newTemplateGit(temp map[string]interface{}) (*templateGit, error) {
+    var full_url string
+    repo_any, found := temp["repo"]
+
+    if !found {
+        return nil, errors.New("malformed template, no repo found")
+    }
+    repo_name, ok := repo_any.(string)
+    if !ok {
+        return nil, errors.New("malformed value for path, expected string")
+    }
+
+    if strings.Contains(repo_name, "github.com") {
+        full_url = repo_name
+    } else {
+        full_url = "git@github.com"+repo_name
+    }
+
+    // pull out commands, optional field
+    commands := temp["commands"]
+
+    if commands == nil {
+        commands = ""
+    }
+    cmd, err := newCommand(commands.(string))
+    if err != nil {
+        return nil, err
+    }
+
+    return &templateGit{ full_url, cmd }, nil
+
+}
+
 func newTemplatePath(temp map[string]interface{}) (*templatePath, error) {
 
     possiblePath, found := temp["path"]
@@ -260,6 +293,22 @@ func buildTemplateContents(contentMap interface{}, tld string) error {
     return err
 }
 
+
+func (t *templateGit) build( config *config.PkgConfig, tld string) error {
+    cmd := exec.Command("git", "clone", t.repo, tld)
+
+    err := cmd.Run()
+
+    if err != nil {
+        return err
+    }
+
+    if err := t.commands.run(tld); err != nil {
+        return err
+    }
+
+    return nil
+}
 
 func (t *templatePath) build( config *config.PkgConfig, tld string ) error {
     // attempt to create dir/file in provided path as check(?)
