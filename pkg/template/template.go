@@ -448,6 +448,8 @@ func readTeamplate(templateName string, config *config.PkgConfig) (template, err
         return newTemplateContent(templateMap)
     case "path":
         return newTemplatePath(templateMap)
+    case "git":
+        return newTemplateGit(templateMap)
     // TODO: @ccs add additional template types 
     default:
         return nil, errors.New("Template type("+t.(string)+") not implemented.")
