@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+    "regexp"
 
 	"github.com/calebcscott/pkg-init/pkg/config"
 	"github.com/spf13/viper"
@@ -50,7 +51,8 @@ type templatePath struct {
 }
 
 type templateGit struct {
-    repo string
+    repo_name string
+    repo_url string
     commands cmd
 }
 
@@ -141,6 +143,10 @@ func newTemplateGit(temp map[string]interface{}) (*templateGit, error) {
 
     if strings.Contains(repo_name, "github.com") {
         full_url = repo_name
+        // setup repo_name
+        regex_command := regexp.MustCompile("^https.*/([a-zA-Z0-9]+)[.]git")
+        str_replace := "$1"
+        repo_name = regex_command.ReplaceAllString(repo_name, str_replace)
     } else {
         full_url = "git@github.com"+repo_name
     }
@@ -156,7 +162,7 @@ func newTemplateGit(temp map[string]interface{}) (*templateGit, error) {
         return nil, err
     }
 
-    return &templateGit{ full_url, cmd }, nil
+    return &templateGit{ repo_name, full_url, cmd }, nil
 
 }
 
@@ -295,12 +301,23 @@ func buildTemplateContents(contentMap interface{}, tld string) error {
 
 
 func (t *templateGit) build( config *config.PkgConfig, tld string) error {
-    cmd := exec.Command("git", "clone", t.repo, tld)
+    // Check if already cloned to cache
+    var cmd []*exec.Cmd
+    if stat, err := os.Stat(filepath.Join(config.CacheDir, t.repo_name)); err != nil && stat.IsDir() {
+        // copy out of cache
+        cmd = append(cmd, exec.Command("cp", "-R", filepath.Join(config.CacheDir, t.repo_name), tld))
+    } else {
+        // clone then remove git info
+        cmd = append(cmd, exec.Command("git", "clone", t.repo_url, filepath.Join(config.CacheDir, t.repo_name)))
+        cmd = append(cmd, exec.Command("rm", "-rf", filepath.Join(config.CacheDir, t.repo_name) + "/.git"))
+        cmd = append(cmd, exec.Command("cp", "-R", filepath.Join(config.CacheDir, t.repo_name), tld))
+    }
 
-    err := cmd.Run()
-
-    if err != nil {
-        return err
+    for _, c := range cmd {
+        err := c.Run()
+        if err != nil {
+            return err
+        }
     }
 
     if err := t.commands.run(tld); err != nil {
